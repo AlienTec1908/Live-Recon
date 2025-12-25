@@ -71,19 +71,19 @@ The **Live Finding Banner** is the core of the tool.
 ### Example (internal)
 
 
-INTERNAL
-════════════════════════════════════════════════════════
-Live - Finding - System
-════════════════════════════════════════════════════════
-ipv6 : [x][x][x]
-ports : openssh python-http
-webserver : simplehttp
-methods : [x][x][x]
-cookie : [x][x][x]
-nikto : wpconfig
-dirscan : css html js png py
-════════════════════════════════════════════════════════
-
+INTERNAL<br>
+════════════════════════════════════════════════════════<br>
+Live - Finding - System<br>
+════════════════════════════════════════════════════════<br>
+ipv6 : [x][x][x]<br>
+ports : openssh python-http<br>
+webserver : simplehttp<br>
+methods : [x][x][x]<br>
+cookie : [x][x][x]<br>
+nikto : wpconfig<br>
+dirscan : css html js png py<br>
+════════════════════════════════════════════════════════<br>
+<br><br>
 
 ➡️ **Relevant data visible instantly**, without reading logs.
 
