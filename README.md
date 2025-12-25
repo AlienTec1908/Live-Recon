@@ -68,7 +68,6 @@ Run Live Recon by specifying a target IP address or hostname:
 
 ---
 
-```markdown
 ## ⚙️ Parameters
 
 ### `--ip <TARGET>`
@@ -80,9 +79,9 @@ Target IP address or hostname to scan.
 ```bash
 /bin/python3 live_recon.py --ip example.com
 
+```
 ---
-
-```markdown
+ 
 
 
 
