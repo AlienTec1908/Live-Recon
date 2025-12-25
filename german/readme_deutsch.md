@@ -55,6 +55,8 @@ Live-Recon führt die Scans **sequenziell und selbstständig** aus:
 8. Live-Aggregation aller Findings
 9. Optionale Detailansicht
 
+---
+
 Kein manuelles Triggern einzelner Module nötig.
 
 ---
