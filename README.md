@@ -114,6 +114,61 @@ nikto : wpconfig<br>
 dirscan : css html js png py<br>
 ════════════════════════════════════════════════════════<br>
 <br><br>
+---
+
+---
+
+## 🌐 Automatic Internal vs External Target Detection
+
+Live Recon automatically detects whether the provided target is an **internal** or **external** address — no manual mode selection required.
+
+### 🔍 How it works
+
+When you start a scan with `--ip`, Live Recon evaluates the target:
+
+- **Internal targets**
+  - Private IPv4 ranges (RFC1918)
+    - `10.0.0.0/8`
+    - `172.16.0.0/12`
+    - `192.168.0.0/16`
+  - Loopback (`127.0.0.1`)
+  - Link-local addresses
+
+- **External targets**
+  - Public IPv4 / IPv6 addresses
+  - Internet-facing hostnames and domains
+
+The detection happens **automatically at runtime**.
+
+---
+
+### 🧠 Why this matters
+
+Based on the detected target type, Live Recon:
+
+- Adjusts scan behavior and expectations
+- Applies the correct threat model
+- Clearly separates **internal recon** from **external recon**
+- Prevents confusion in mixed environments
+
+No flags. No config switches. No user error.
+
+---
+
+### 📡 Live Banner Integration
+
+The detected mode is shown **directly in the Live Finding Banner**:
+
+- 🟢 **INTERNAL** — green banner  
+- 🔴 **EXTERNAL** — red banner  
+
+This status remains visible throughout the entire scan and updates live with findings.
+
+Example (conceptual):
+
+
+
+---
 
 ➡️ **Relevant data visible instantly**, without reading logs.
 
