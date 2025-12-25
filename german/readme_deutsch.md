@@ -59,6 +59,8 @@ Kein manuelles Triggern einzelner Module nötig.
 
 ---
 
+<img src="banner-terminal.jpg" alt="agent-image-ripper cover" width="100%" style="height: 20rem;">
+
 ## 🚀 Usage
 
 Run Live Recon by specifying a target IP address or hostname:
@@ -111,6 +113,8 @@ dirscan : css html js png py<br>
 <br><br>
 
 ➡️ **Relevantes sofort sichtbar**, ohne Logs zu lesen.
+
+<img src="live-banner-terminal.jpg" alt="agent-image-ripper cover" width="100%" style="height: 20rem;">
 
 ---
 
