@@ -58,6 +58,8 @@ Live Recon executes scans **sequentially and independently**:
 No manual triggering of individual modules required.
 
 ---
+<img src="banner-terminal.jpg" alt="agent-image-ripper cover" width="100%" style="height: 20rem;">
+
 
 ## 🚀 Usage
 
@@ -114,6 +116,8 @@ dirscan : css html js png py<br>
 <br><br>
 
 ➡️ **Relevant data visible instantly**, without reading logs.
+
+<img src="live-banner-terminal.jpg" alt="agent-image-ripper cover" width="100%" style="height: 20rem;">
 
 ---
 
