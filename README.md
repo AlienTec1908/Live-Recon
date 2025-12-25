@@ -9,12 +9,13 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/License-MIT-blue.svg">
-  <img src="https://img.shields.io/badge/Platform-Linux%20%7C%20Windows-lightgrey.svg">
-  <img src="https://img.shields.io/badge/Shell-Bash%20%7C%20PowerShell-green.svg">
-  <img src="https://img.shields.io/badge/Status-Active%20Development-orange.svg">
-  <img src="https://img.shields.io/github/stars/yourname/Live-Recon?style=social">
+  <img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License">
+  <img src="https://img.shields.io/badge/Platform-Linux-lightgrey.svg" alt="Platform">
+  <img src="https://img.shields.io/badge/Shell-Bash-green.svg" alt="Shell">
+  <img src="https://img.shields.io/badge/Status-Active%20Development-orange.svg" alt="Status">
+  <img src="https://img.shields.io/github/stars/AlienTec1908/Live-Recon?style=social" alt="GitHub Stars">
 </p>
+
 
 ---
 
