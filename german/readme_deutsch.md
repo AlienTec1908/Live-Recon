@@ -59,7 +59,7 @@ Kein manuelles Triggern einzelner Module nötig.
 
 ---
 
-<img src="banner-terminal.jpg" alt="agent-image-ripper cover" width="100%" style="height: 20rem;">
+<img src="../banner-terminal.jpg" alt="agent-image-ripper cover" width="100%" style="height: 20rem;">
 
 ## 🚀 Usage
 
@@ -114,7 +114,7 @@ dirscan : css html js png py<br>
 
 ➡️ **Relevantes sofort sichtbar**, ohne Logs zu lesen.
 
-<img src="live-banner-terminal.jpg" alt="agent-image-ripper cover" width="100%" style="height: 20rem;">
+<img src="../live-banner-terminal.jpg" alt="agent-image-ripper cover" width="100%" style="height: 20rem;">
 
 ---
 
