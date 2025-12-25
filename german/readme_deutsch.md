@@ -113,7 +113,45 @@ nikto : wpconfig<br>
 dirscan : css html js png py<br>
 ════════════════════════════════════════════════════════<br>
 <br><br>
+---
 
+## 🌐 Automatic Target Classification (External vs. Internal)
+
+Live Recon erkennt **vollautomatisch**, ob es sich beim Ziel um eine **interne** oder **externe** IP-Adresse handelt.  
+Keine Flags, keine Konfiguration, keine manuellen Entscheidungen.
+
+### 🔍 How it works
+
+Beim Start analysiert Live Recon die Zieladresse:
+
+- **Interne Targets**
+  - RFC1918 IPv4 (z. B. `10.0.0.0/8`, `172.16.0.0/12`, `192.168.0.0/16`)
+  - Loopback (`127.0.0.1`)
+  - Link-Local (`169.254.0.0/16`)
+  - IPv6 Link-Local (`fe80::/10`)
+
+- **Externe Targets**
+  - Öffentliche IPv4/IPv6-Adressen
+  - Internet-exponierte Hosts
+  - Cloud- und WAN-Ziele
+
+Die Erkennung erfolgt **vor dem ersten Scan** und beeinflusst automatisch:
+- Scan-Reihenfolge
+- Module
+- Timeouts
+- Darstellung im Live-Banner
+
+---
+
+## 🖥️ Live Banner – Target Mode Indicator
+
+Der erkannte Modus wird **permanent im Live-Finding-Banner angezeigt**.
+
+### Example: External Target
+
+
+
+---
 ➡️ **Relevantes sofort sichtbar**, ohne Logs zu lesen.
 
 <img src="../live-banner-terminal.jpg" alt="agent-image-ripper cover" width="100%" style="height: 20rem;">
