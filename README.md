@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="recon_monster_banner.png" alt="agent-image-ripper cover" width="50%" style="height: 20rem;">
+  <img src="Live-Recon.png" alt="agent-image-ripper cover" width="50%" style="height: 20rem;">
 </p>
  
  
@@ -13,7 +13,7 @@
   <img src="https://img.shields.io/badge/Platform-Linux%20%7C%20Windows-lightgrey.svg">
   <img src="https://img.shields.io/badge/Shell-Bash%20%7C%20PowerShell-green.svg">
   <img src="https://img.shields.io/badge/Status-Active%20Development-orange.svg">
-  <img src="https://img.shields.io/github/stars/yourname/recon-monster?style=social">
+  <img src="https://img.shields.io/github/stars/yourname/Live-Recon?style=social">
 </p>
 
 ---
