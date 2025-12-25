@@ -147,7 +147,7 @@ Die Erkennung erfolgt **vor dem ersten Scan** und beeinflusst automatisch:
 
 Der erkannte Modus wird **permanent im Live-Finding-Banner angezeigt**.
 
-### Example: External Target
+### Example: Internal Target
 
 
 
