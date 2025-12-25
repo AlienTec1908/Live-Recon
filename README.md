@@ -1,7 +1,7 @@
+ 
 <p align="center">
-  <img src="recon_monster_banner.png" alt="Recon Monster Banner" width="80%">
+  <img src="recon_monster_banner.png" alt="agent-image-ripper cover" width="50%" style="height: 20rem;">
 </p>
-
 <p align="center">
   <b>Autonomous Recon Framework for Offensive Security</b><br>
   Hands-off scanning · Live findings · Senior-grade workflows
