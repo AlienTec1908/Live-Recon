@@ -41,7 +41,7 @@ Recon Monster runs independently through all recon phases, evaluates results liv
 
 ## ⚙️ Autonomous Scan Workflow
 
-Recon Monster executes scans **sequentially and independently**:
+Live Recon executes scans **sequentially and independently**:
 
 1. HTTP / method analysis (curl)
 2. Nmap TCP full scan
@@ -157,7 +157,7 @@ Suitable for reporting, post-analysis, and tool chaining.
 
 ---
 
-## 🧠 Why Recon Monster?
+## 🧠 Why Live Recon?
 
 - No tool spamming
 - No blind scan flooding
@@ -165,7 +165,7 @@ Suitable for reporting, post-analysis, and tool chaining.
 - Built from **real recon sessions**
 - Designed for **senior-level workflows**
 
-Recon Monster is not a toy.  
+Live Recon is not a toy.  
 It is a **recon operator** that works for you.
 
 ---
