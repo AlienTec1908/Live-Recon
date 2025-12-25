@@ -59,6 +59,33 @@ No manual triggering of individual modules required.
 
 ---
 
+## 🚀 Usage
+
+Run Live Recon by specifying a target IP address or hostname:
+
+```bash
+/bin/python3 /root/recontool_project/live_recon.py --ip <ip>
+
+---
+
+```markdown
+## ⚙️ Parameters
+
+### `--ip <TARGET>`
+
+Target IP address or hostname to scan.
+
+**Example:**
+
+```bash
+/bin/python3 live_recon.py --ip example.com
+
+---
+
+```markdown
+
+
+
 ## 📡 Live Finding System (Real Time)
 
 The **Live Finding Banner** is the core of the tool.
@@ -191,5 +218,18 @@ It is a **recon operator** that works for you.
 - Red team preparation
 
 
+## ⚠️ Security & Legal Disclaimer
+
+This tool is intended **exclusively for authorized security testing**.
+
+- Use **only** on systems you own or have **explicit written permission** to test
+- Designed for **professional recon**, **labs**, **CTFs**, and **internal assessments**
+- The author assumes **no responsibility** for misuse or damage caused by this tool
+- You are solely responsible for complying with **local laws and regulations**
+
+Live Recon was built to support **real-world offensive security workflows**,  
+**not** for illegal or unethical activity.
+
+**Use responsibly.**
 
 
