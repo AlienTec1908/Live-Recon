@@ -99,7 +99,7 @@ The **Live Finding Banner** is the core of the tool.
 - No end-of-run parsing required
 
 ### Example (internal)
-
+```text
 INTERNAL
 ════════════════════════════════════════════════════════
 Live - Finding - System
@@ -112,7 +112,7 @@ cookie     : [x][x][x]
 nikto      : wpconfig
 dirscan    : css html js png py
 ════════════════════════════════════════════════════════
-
+```
 <br><br>
 ---
 
