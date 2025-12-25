@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/recon_monster_banner.png" alt="Recon Monster Banner" width="80%">
+  <img src="recon_monster_banner.png" alt="Recon Monster Banner" width="80%">
 </p>
 
 <p align="center">
