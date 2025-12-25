@@ -1,7 +1,8 @@
- 
 <p align="center">
   <img src="recon_monster_banner.png" alt="agent-image-ripper cover" width="50%" style="height: 20rem;">
 </p>
+ 
+
 <p align="center">
   <b>Autonomous Recon Framework for Offensive Security</b><br>
   Hands-off scanning · Live findings · Senior-grade workflows
@@ -20,174 +21,164 @@
 # 🧊 Recon Monster – Winter Tool
 
 
-Autonomous recon framework for real-world offensive security workflows.  
-Built for **hands-off scanning**, **real-time live findings**, and **maximum control without micromanagement**.
+Autonomes Recon-Framework für reale Offsec-Workflows.  
+Entwickelt für **Hands-off-Scanning**, **Live-Findings in Echtzeit** und **maximale Kontrolle ohne Micromanagement**.
 
-Recon Monster runs independently through all recon phases, evaluates results live, and allows targeted intervention — without breaking the scan flow.
-
----
-
-## 🔥 Core Idea
-
-**Start → observe → intervene only when necessary**
-
-- Fully **autonomous recon pipeline**
-- **Live finding system** with instant classification
-- **No waiting for reports** — findings appear during the scan
-- **Skippable scans** without breaking the pipeline
-- **On-demand deep analysis**, not forced
+Recon Monster läuft selbstständig durch alle Recon-Phasen, bewertet Ergebnisse live und erlaubt gezieltes Eingreifen – ohne den Scanfluss zu zerstören.
 
 ---
 
-## ⚙️ Autonomous Scan Workflow
+## 🔥 Kernidee
 
-Live Recon executes scans **sequentially and independently**:
+**Starten → beobachten → nur eingreifen, wenn nötig**
 
-1. HTTP / method analysis (curl)
-2. Nmap TCP full scan
-3. Nmap UDP scan
-4. Nmap SCTP host scan
-5. Web server identification
-6. Nikto web scan
-7. Feroxbuster directory scan
-8. Live aggregation of all findings
-9. Optional detailed view
-
-No manual triggering of individual modules required.
+- Vollständig **autonomer Recon-Ablauf**
+- **Live-Finding-System** mit sofortiger Klassifizierung
+- **Kein Warten auf Reports** – Findings erscheinen während des Scans
+- **Scans überspringbar** ohne Abbruch der Pipeline
+- **Detaillierte Analyse auf Abruf**, nicht erzwungen
 
 ---
 
-## 📡 Live Finding System (Real Time)
+## ⚙️ Autonomer Scan-Workflow
 
-The **Live Finding Banner** is the core of the tool.
+Recon Monster führt die Scans **sequenziell und selbstständig** aus:
 
-- Updates **after every scan**
-- Displays **immediately discovered results**
-- Consistently labeled
-- Color-highlighted
-- No end-of-run parsing required
+1. HTTP / Methoden-Analyse (curl)
+2. Nmap TCP Full Scan
+3. Nmap UDP Scan
+4. Nmap SCTP Hostscan
+5. Webserver-Identifikation
+6. Nikto Web Scan
+7. Feroxbuster Directory Scan
+8. Live-Aggregation aller Findings
+9. Optionale Detailansicht
 
-### Example (internal)
-
-
-INTERNAL<br>
-════════════════════════════════════════════════════════<br>
-Live - Finding - System<br>
-════════════════════════════════════════════════════════<br>
-ipv6 : [x][x][x]<br>
-ports : openssh python-http<br>
-webserver : simplehttp<br>
-methods : [x][x][x]<br>
-cookie : [x][x][x]<br>
-nikto : wpconfig<br>
-dirscan : css html js png py<br>
-════════════════════════════════════════════════════════<br>
-<br><br>
-
-➡️ **Relevant data visible instantly**, without reading logs.
+Kein manuelles Triggern einzelner Module nötig.
 
 ---
 
-## 🎨 Color & Label Logic
+## 📡 Live-Finding-System (Echtzeit)
 
-- Services, ports, web servers → clearly named
-- Web findings (e.g. `wp-config.php`) → instantly flagged
-- Dirscan results → grouped by file extensions
-- Consistent status across all scans
+Das **Live-Finding-Banner** ist das Herzstück des Tools.
 
-No noise. No duplicates.
+- Aktualisiert sich **nach jedem Scan**
+- Zeigt **sofort erkannte Ergebnisse**
+- Einheitlich gelabelt
+- Farblich hervorgehoben
+- Kein Parsing am Ende notwendig
 
----
+### Beispiel (intern)
 
-## ⏭️ Skip Scans (CTRL + C)
-
-Any running scan can be **selectively skipped**:
-
-CTRL + C
-
-
-Result:
-
-- Current scan exits cleanly
-- Tool **automatically continues with the next module**
-- Live finding system remains active
-- No full recon interruption
-
-Example:
-
-[!] SCAN ABORTED: Feroxbuster scan skipped.
+INTERNAL
+════════════════════════════════════════════════════════
+Live - Finding - System
+════════════════════════════════════════════════════════
+ipv6 : [x][x][x]
+ports : openssh python-http
+webserver : simplehttp
+methods : [x][x][x]
+cookie : [x][x][x]
+nikto : wpconfig
+dirscan : css html js png py
+════════════════════════════════════════════════════════
 
 
-Ideal for long scans or clear prioritization.
+➡️ **Relevantes sofort sichtbar**, ohne Logs zu lesen.
 
 ---
 
-## 🔍 On-Demand Detail View (`J` Key)
+## 🎨 Farb- & Label-Logik
 
-At the end of the autonomous run:
+- Services, Ports, Webserver → klar benannt
+- Web-Findings (z. B. `wp-config.php`) → sofort markiert
+- Dirscan-Typen → nach Dateiendungen gruppiert
+- Konsistenter Status über alle Scans
 
-[?] If you want to display all scans in detail, press 'J':
+Kein Noise. Keine Dopplungen.
+
+---
+
+## ⏭️ Scan überspringen (STRG + C)
+
+Jeder laufende Scan kann **gezielt übersprungen** werden:
 
 
+Ergebnis:
 
-Pressing `J` provides:
+- Aktueller Scan wird sauber beendet
+- Tool läuft **automatisch mit dem nächsten Modul weiter**
+- Live-Finding-System bleibt aktiv
+- Kein Abbruch des gesamten Recon-Flows
 
-- Full Nikto reports
-- Cookie dumps
-- Feroxbuster JSON & text output
-- Structured per-module results
-- Reproducible findings
+Beispiel:
+[!] SCAN ABGEBROCHEN: Feroxbuster Scan übersprungen.
 
-➡️ **Details only when you want them.**
+
+Ideal bei langen Scans oder klarer Priorisierung.
+
+---
+
+## 🔍 Detailansicht auf Abruf (Taste `J`)
+
+Am Ende des autonomen Runs:
+[?] Wenn Sie alle Scans detailliert anzeigen lassen wollen, geben Sie 'J' ein:
+
+
+Mit `J` erhältst du:
+
+- Vollständige Nikto-Reports
+- Cookie-Dumps
+- Feroxbuster JSON & Text
+- Strukturierte Ausgabe pro Modul
+- Reproduzierbare Findings
+
+➡️ **Details nur dann**, wenn du sie brauchst.
 
 ---
 
 ## 📁 Output & Reports
 
-Automatically generated:
+Automatisch erzeugt:
 
 - `cookies.txt`
 - `nikto.txt`
 - `nikto.json`
 - `feroxbuster.json`
 - `nmap_*.json`
-- Structured log directories per target
+- Strukturierte Log-Ordner pro Target
 
-Suitable for reporting, post-analysis, and tool chaining.
-
----
-
-## 🧠 Why Live Recon?
-
-- No tool spamming
-- No blind scan flooding
-- No waiting for final reports
-- Built from **real recon sessions**
-- Designed for **senior-level workflows**
-
-Live Recon is not a toy.  
-It is a **recon operator** that works for you.
+Geeignet für Reporting, Nachanalyse und Tool-Chains.
 
 ---
 
-## ❄️ Winter Edition – Focus
+## 🧠 Warum Recon Monster?
 
-- Stability
-- Readability
-- Live feedback
-- Autonomy
-- Control without overhead
+- Kein Tool-Spamming
+- Kein blindes Durchrauschen
+- Kein Warten auf Endreports
+- Entwickelt aus **echten Recon-Sessions**
+- Gedacht für **Senior-Workflows**
+
+Recon Monster ist kein Spielzeug.  
+Es ist ein **Recon-Operator**, der für dich arbeitet.
 
 ---
 
-## 🚀 Use Cases
+## ❄️ Winter Edition – Fokus
 
-- CTF recon
-- Initial access reconnaissance
-- Lab enumeration
-- Pre-exploitation mapping
-- Red team preparation
+- Stabilität
+- Lesbarkeit
+- Live-Feedback
+- Autonomie
+- Kontrolle ohne Overhead
 
+---
 
+## 🚀 Einsatzgebiet
 
-
+- CTF Recon
+- Initial Access Recon
+- Lab-Enumeration
+- Pre-Exploitation Mapping
+- Red-Team-Vorbereitung
