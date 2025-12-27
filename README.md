@@ -283,9 +283,8 @@ It is a **recon operator** that works for you.
 Want to understand how this tool works under the hood? I've written a detailed, line-by-line documentation for students and developers who want to learn from the source code.
 
 This is not just a tool, it's a playbook.
-
-**[➡️ Dive into the Full Code Documentation](./docs/recon-doku.html)**
-
+ 
+**[➡️ Dive into the Full Code Documentation](docs/recon-doku-eng.html)**
 ---
 
 ## ⚠️ Security & Legal Disclaimer
