@@ -254,3 +254,28 @@ Es ist ein **Recon-Operator**, der für dich arbeitet.
 - Lab-Enumeration
 - Pre-Exploitation Mapping
 - Red-Team-Vorbereitung
+---
+
+## 📖 Code Architecture & Documentation
+
+Want to understand how this tool works under the hood? I've written a detailed, line-by-line documentation for students and developers who want to learn from the source code.
+
+This is not just a tool, it's a playbook.
+ 
+**[➡️ Dive into the Full Code Documentation](https://alientec1908.github.io/Live-Recon/de)**
+
+---
+
+## ⚠️ Sicherheits- und Rechtshinweis
+
+Dieses Tool ist **ausschließlich für autorisierte Sicherheitstests** vorgesehen.
+
+-   Verwenden Sie es **nur** auf Systemen, die Ihnen gehören oder für die Sie eine **ausdrückliche schriftliche Genehmigung** zum Testen haben.
+-   Entwickelt für **professionelle Aufklärung**, **Labs**, **CTFs** und **interne Assessments**.
+-   Der Autor übernimmt **keine Verantwortung** für Missbrauch oder Schäden, die durch dieses Tool verursacht werden.
+-   Sie sind allein für die Einhaltung der **lokalen Gesetze und Vorschriften** verantwortlich.
+
+Live Recon wurde entwickelt, um **reale offensive Sicherheits-Workflows zu unterstützen**,
+**nicht** für illegale oder unethische Aktivitäten.
+
+**Verwenden Sie es verantwortungsbewusst.**
