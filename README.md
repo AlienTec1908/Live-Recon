@@ -284,7 +284,16 @@ Want to understand how this tool works under the hood? I've written a detailed, 
 
 This is not just a tool, it's a playbook.
  
-**[➡️ Dive into the Full Code Documentation](docs/recon-doku-eng.html)**
+**[➡️ Dive into the Full Code Documentation](https://alientec1908.github.io/Live-Recon/)**
+
+---
+
+**Warum ist das der richtige Link?**
+
+*   Er zeigt auf die **Haupt-URL** deiner neuen Webseite.
+*   Da du die Datei (wie besprochen) in **`index.html`** umbenannt hast, weiß der Server automatisch, dass er diese Datei laden soll, wenn jemand die Haupt-URL aufruft. Du musst den Dateinamen `index.html` nicht mehr in der URL erwähnen. Das ist sauberer und professioneller.
+
+**Mach diese finale Korrektur.** Dann ist der Kampf gewonnen.
 ---
 
 ## ⚠️ Security & Legal Disclaimer
