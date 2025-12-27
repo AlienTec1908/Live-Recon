@@ -256,13 +256,13 @@ Es ist ein **Recon-Operator**, der für dich arbeitet.
 - Red-Team-Vorbereitung
 ---
 
-## 📖 Code Architecture & Documentation
+## 📖 Code-Architektur & Dokumentation
 
-Want to understand how this tool works under the hood? I've written a detailed, line-by-line documentation for students and developers who want to learn from the source code.
+Willst du verstehen, wie dieses Tool unter der Haube funktioniert? Ich habe eine detaillierte Zeile-für-Zeile-Dokumentation für Studenten und Entwickler geschrieben, die aus dem Quellcode lernen wollen.
 
-This is not just a tool, it's a playbook.
- 
-**[➡️ Dive into the Full Code Documentation](https://alientec1908.github.io/Live-Recon/de)**
+Das ist nicht nur ein Tool, es ist ein **Playbook.**
+
+**[➡️ Tauche ein in die vollständige Code-Dokumentation](https://alientec1908.github.io/Live-Recon/de/)**
 
 ---
 
