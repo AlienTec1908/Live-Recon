@@ -1,0 +1,1042 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live-Recon Code Documentation</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css">
+</head>
+<body>
+
+<div class="container">
+    <h1 class="main-header">Live-Recon: Architecture of a Weapon 🔬</h1>
+    
+    <div id="toc">
+        <h2>Table of Contents</h2>
+        <ul id="toc-list">
+            <li><a href="#module-live-recon">Chapter 1: live_recon.py (The Command Center)</a></li>
+            <li><a href="#module-banner">Chapter 2: banner.py (The Face of the Operation)</a></li>
+            <li><a href="#module-utils">Chapter 3: utils.py (The Swiss Army Knife)</a></li>
+            <li><a href="#module-scans">Chapter 4: scans.py (The Battle Plan)</a></li>
+            <li><a href="#module-nmap-loader">Chapter 5: nmap_services_loader.py (The Ammunition Box)</a></li>
+            <li><a href="#module-live-parser">Chapter 6: live_parser.py (The Real-Time Spy)</a></li>
+            <li><a href="#module-nmap-runner">Chapter 7: nmap_runner.py (Special Forces Planning)</a></li>
+            <li><a href="#module-nmap-subroutines">Chapter 8: nmap_subroutines.py (The Special Forces)</a></li>
+            <li><a href="#module-detailed-logs">Chapter 9: detailed_logs.py (The Final Debriefing)</a></li>
+        </ul>
+    </div>
+
+    <!-- ======================= CHAPTER 1: LIVE_RECON.PY ======================= -->
+    <div id="module-live-recon" class="module-chapter">
+        <h2>Chapter 1: live_recon.py</h2>
+        <h3>🎯 Mission of the Module</h3>
+        <p>
+            Think of this script as the <strong>brain and heart</strong> of the entire project. When an operator starts the tool in the terminal, <code>live_recon.py</code> is the first thing that comes to life. It is the <strong>conductor</strong> that directs the orchestra of various scan tools. Its job is to receive commands, plan the mission, dispatch the individual soldiers (scans), collect their reports (live findings) in real-time, and finally, survey the entire battlefield.
+        </p>
+
+        <h3>⚔️ The Armory (Libraries & Modules)</h3>
+        <div class="import-grid">
+            <div class="import-card" title="Reads commands from the user on the command line.">argparse</div>
+            <div class="import-card" title="Starts external programs like Nmap or Nikto.">subprocess</div>
+            <div class="import-card" title="Understands and analyzes IP addresses (v4 and v6).">ipaddress</div>
+            <div class="import-card" title="Enables communication with the operating system (e.g., creating folders).">os</div>
+            <div class="import-card" title="Used for pauses and time measurement.">time</div>
+            <div class="import-card" title="Reads and writes the universal data format JSON.">json</div>
+            <div class="import-card" title="Our own module containing the battle plan (all scans).">scans</div>
+            <div class="import-card" title="Our own module with general helper functions.">utils</div>
+            <div class="import-card" title="Our own module to display detailed logs at the end.">detailed_logs</div>
+            <div class="import-card" title="Our own module for all visual banners.">banner</div>
+            <div class="import-card" title="Our own module for in-depth Nmap analysis.">nmap_runner</div>
+            <div class="import-card" title="Our own module, the real-time spy for live findings.">live_parser</div>
+            <div class="import-card" title="Our own module for Nmap follow-up actions.">nmap_subroutines</div>
+        </div>
+        
+        <h3>Line-by-Line Code Analysis</h3>
+        
+        <h4>Function: <code>diff_intern_extern(target)</code></h4>
+        <div class="code-block">
+            <pre><code class="language-python">
+def diff_intern_extern(target):
+    try:
+        ip = ipaddress.ip_address(target)
+        return "internal" if ip.is_private or ip.is_loopback else "external"
+    except ValueError:
+        return "external"
+            </code></pre>
+            <div class="explanation">
+                <p><strong>Goal:</strong> This function is our first scout. It must make a critical decision: are we attacking a target in the <strong>internal</strong> network (e.g., in a corporate network) or on the <strong>external</strong>, public internet? Scan strategies will depend on this later.</p>
+                <p><strong>Line 2:</strong> <code>try:</code> - This initiates a "safe" block. The code here is attempted, but if an error occurs, the program doesn't crash but instead jumps to the <code>except</code> block. It's our safety net.</p>
+                <p><strong>Line 3:</strong> <code>ip = ipaddress.ip_address(target)</code> - The <code>ipaddress</code> library is like an ID checker for IP addresses. It tries to convert the text (<code>target</code>) into a special IP object. This only works if the text is a valid IP address like "192.168.1.1" or "8.8.8.8".</p>
+                <p><strong>Line 4:</strong> <code>return "internal" if ip.is_private ...</code> - This is the core. The IP object has built-in superpowers. <code>ip.is_private</code> automatically detects if it's a private IP (like 192.168.x.x, 10.x.x.x). <code>ip.is_loopback</code> detects the "self" address (127.0.0.1). If either is true, it's an internal target. Otherwise, it's external.</p>
+                <p><strong>Line 5-6:</strong> <code>except ValueError: return "external"</code> - This is Plan B. If the ID checker in line 3 fails (because the <code>target</code> is, for example, "google.com"), it raises a <code>ValueError</code>. We catch this error and, as a safety measure, always assume that a domain name is an external target.</p>
+            </div>
+        </div>
+
+        <h4>Main Execution: <code>if __name__ == "__main__":</code></h4>
+        <div class="code-block">
+            <pre><code class="language-python">
+if __name__ == "__main__":
+    os.system("clear")
+    print_mega_banner()
+    check_dependencies()
+    time.sleep(1)
+
+    parser = argparse.ArgumentParser(description="Recon Monster – Autonomous Recon Framework")
+    parser.add_argument("--ip", required=True, help="Target IP address or hostname")
+    args = parser.parse_args()
+    target = args.ip
+
+    sudo = [] if os.getuid() == 0 else ["sudo"]
+    scan_mode = diff_intern_extern(target)
+
+    log_dir = f"logs/{target}"
+    os.makedirs(log_dir, exist_ok=True)
+
+    live_findings = {
+        "ipv6": set(),
+        "nmap": set(),
+        "webserver": set(),
+        "methods": set(),
+        "cookie": set(),
+        "nikto": set(),
+        "ferox": set(),
+    }
+            </code></pre>
+            <div class="explanation">
+                <p><strong>Fundamentals:</strong> The <code>if __name__ == "__main__":</code> block is a standard in Python. It ensures that this code is only executed when we start the script directly (<code>python live_recon.py</code>), but not when we import it as a module into another script.</p>
+                <p><strong>Preparation (Lines 2-5):</strong> Before the battle begins, the battlefield is prepared. <code>os.system("clear")</code> cleans the screen. <code>print_mega_banner()</code> provides the epic first impression. <code>check_dependencies()</code> is the weapon check – are all external tools (soldiers) like Nmap present?</p>
+                <p><strong>Receiving Commands (Lines 7-10):</strong> <code>argparse</code> is like an order form for the command line. We define what information we need from the user (<code>--ip</code>) and make it mandatory (<code>required=True</code>). <code>parser.parse_args()</code> then reads the user's input and stores it.</p>
+                <p><strong>Root Check (Line 12):</strong> <code>os.getuid() == 0</code> is the way in Linux/Unix to ask: "Am I the god-emperor (root)?". The user ID of root is always 0. If yes, the <code>sudo</code> list is empty. If not, the list is filled with the word <code>"sudo"</code> so we can prepend it to commands that require admin rights.</p>
+                <p><strong>Data Structure (Lines 18-26):</strong> <code>live_findings</code> is our central notebook. A <code>set</code> is like a list but has a superpower: it can only contain each item once. If we add "http" 10 times, it will still only contain "http" once. This is perfect for our live banner, which shouldn't display duplicates.</p>
+            </div>
+        </div>
+        
+        <h4>The Main Loop: <code>for scan in SCANS_TO_RUN:</code></h4>
+        <div class="code-block">
+            <pre><code class="language-python">
+    for scan in SCANS_TO_RUN:
+        proc = None
+        try:
+            print_live_banner(scan_mode, live_findings)
+            print_scan_title(scan["name"])
+
+            cmd = [p.replace("{TARGET}", target) for p in scan["command"]]
+            if cmd[0] not in ["curl", "ping6"]:
+                cmd = sudo + cmd
+
+            proc = subprocess.Popen(
+                cmd,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+                text=True,
+                errors="ignore"
+            )
+
+            for line in proc.stdout:
+                is_ferox = "ferox" in scan["name"].lower()
+                if is_ferox:
+                    try:
+                        if line.strip().startswith("{"):
+                            data = json.loads(line)
+                            url = data.get("url", "")
+                            status = data.get("status", 200)
+                            lime_color = "\033[92m"
+                            reset_color = "\033[0m"
+                            print(f"{lime_color}[+] Found: {url} (Status: {status}){reset_color}")
+                        else:
+                            print(line.rstrip())
+                    except json.JSONDecodeError:
+                        print(line.rstrip())
+                else:
+                    print(line.rstrip())
+
+                parse_line(scan["name"], line, live_findings)
+
+            proc.wait()
+            print_scan_end()
+
+            if "Nmap" in scan["name"]:
+                jf = f"{log_dir}/nmap_full.json"
+                if os.path.exists(jf):
+                    tasks = NmapRunner(jf).run_analysis()
+                    for t in tasks:
+                        live_findings["nmap"].add(t)
+
+        except KeyboardInterrupt:
+            print(f"\n\n[!] SCAN SKIPPED: {scan['name']} interrupted by user.")
+            if proc:
+                proc.terminate()
+                try:
+                    proc.wait(timeout=2)
+                except subprocess.TimeoutExpired:
+                    proc.kill()
+            print_scan_end()
+            time.sleep(1)
+            continue
+            </code></pre>
+            <div class="explanation">
+                <p><strong>Goal:</strong> This is the main engine. It systematically works through the list of scans from <code>scans.py</code>.</p>
+                <p><strong>Building the Command (Line 7):</strong> <code>[p.replace("{TARGET}", target) for p in scan["command"]]</code> is an elegant Python shorthand ("List Comprehension"). Think of it as a mini-factory in one line: it takes the command template, punches the real target into the right place, and puts the finished part into a new list called <code>cmd</code>.</p>
+                <p><strong>Starting the Process (Line 11):</strong> <code>subprocess.Popen</code> is the command to start a new, independent process (our scan). The parameters are crucial:
+                    <ul>
+                        <li><code>stdout=subprocess.PIPE</code>: Tells the process: "Don't send your output directly to the terminal, but through an invisible tube (pipe) so I can read it."</li>
+                        <li><code>stderr=subprocess.STDOUT</code>: Also redirects all error messages into the same tube. This way, we miss nothing.</li>
+                    </ul>
+                </p>
+                <p><strong>Live Parsing (Line 21):</strong> <code>for line in proc.stdout:</code> is the magic. This loop doesn't wait for the scan to finish. It listens at the "tube" and grabs **each line individually** as soon as it arrives. This enables real-time analysis.</p>
+                <p><strong>The Feroxbuster Filter (Lines 23-38):</strong> A student asked what <code>line.strip().startswith("{")</code> means. Here is the explanation: It's a chain of commands.
+                    <ol>
+                        <li><code>line.strip()</code>: Is like a cleaner. It takes the line and removes all invisible spaces or newlines at the beginning and end.</li>
+                        <li><code>.startswith("{")</code>: After cleaning, it looks at the first character. Is it an opening curly brace <code>{</code>?</li>
+                    </ol>
+                    <strong>Why do we do this?</strong> Because Feroxbuster outputs its most important findings as JSON text, and JSON always starts with <code>{</code>. This line is our gold filter, separating the normal "work noise" from the valuable JSON findings.
+                </p>
+                <p><strong>Nmap Post-Analysis (Lines 43-48):</strong> Nmap is our most important spy. After it has submitted its report (the JSON file), a specialist (<code>NmapRunner</code>) is assigned to it to derive concrete follow-up missions (subroutines) from the raw data.</p>
+            </div>
+        </div>
+
+        <h4>The Conclusion: <code>After the loop</code></h4>
+        <div class="code-block">
+            <pre><code class="language-python">
+    print_live_banner(scan_mode, live_findings)
+
+    for task in live_findings["nmap"]:
+        fn = getattr(nmap_subroutines, task, None)
+        if fn:
+            fn(target)
+
+    show_detailed_logs(log_dir)
+            </code></pre>
+            <div class="explanation">
+                <p><strong>Goal:</strong> After all primary scans have run, the final actions are executed here.</p>
+                <p><strong>Dynamic Execution (Lines 4-7):</strong> This is an advanced and extremely powerful technique. <code>getattr(nmap_subroutines, task, None)</code> is like a magical grab into a toolbox. It says: "Give me the tool (the function) from the <code>nmap_subroutines</code> box whose name is exactly in the text <code>task</code>." If the text is "ftp_brute", it fetches the <code>ftp_brute</code> function. This allows us to call functions dynamically based on text, without having to build a huge <code>if/elif/else</code> chain. This makes the code incredibly flexible for future extensions.</p>
+                <p><strong>Debriefing (Line 9):</strong> <code>show_detailed_logs(log_dir)</code> is the final step. The operator is given the option to view all the original, unfiltered reports from their soldiers (the scan tools).</p>
+            </div>
+        </div>
+    </div>
+    <!-- ======================= END OF CHAPTER 1 ======================= -->
+
+    <!-- THE NEXT CHAPTER STARTS HERE -->
+
+<li><a href="#module-banner">Chapter 2: banner.py (The Face of the Operation)</a></li>```
+ 
+    <!-- ======================= CHAPTER 2: BANNER.PY ======================= -->
+    <div id="module-banner" class="module-chapter">
+        <h2>Chapter 2: banner.py</h2>
+        <h3>🎯 Mission of the Module</h3>
+        <p>
+            This module is our <strong>Propaganda Ministry and Situation Room</strong>. It is 100% responsible for the visual presentation in the terminal. Its mission is to give the operator an epic first impression (<code>print_mega_banner</code>) and, more importantly, to provide a <strong>dynamic, constantly updating situation report</strong> (<code>print_live_banner</code>) throughout the entire operation. It is the cockpit of our fighter jet.
+        </p>
+
+        <h3>⚔️ The Armory (Libraries)</h3>
+        <div class="import-grid">
+            <div class="import-card" title="Enables communication with the operating system.">os</div>
+            <div class="import-card" title="Gives us access to system utilities, e.g., to determine the terminal size.">shutil</div>
+        </div>
+        
+        <h3>Line-by-Line Code Analysis</h3>
+        
+        <h4>The `Colors` Class (The Paint Palette)</h4>
+        <div class="code-block">
+            <pre><code class="language-python">
+import os
+import shutil
+
+class Colors:
+    # Banner Colors
+    ICE_BLUE = '\033[96m'
+    RESET = "\033[0m"
+
+    # UI Colors
+    BOLD = "\033[1m"
+    MAGENTA = '\033[35m'
+    WHITE_TXT = "\033[97m"
+    BLACK_TXT = "\033[30m"
+    SEPARATOR = "\033[96m"
+    TURQ_BG = "\033[46m"
+    HEADER_TEXT_STYLE = "\033[46m\033[1;37m"
+    PLACEHOLDER = "\033[100m\033[91m"
+
+    COLOR_PAIRS = [
+        ("\033[44m", WHITE_TXT),
+        ("\033[103m", BLACK_TXT),
+        ("\033[41m", WHITE_TXT),
+        ("\033[106m", BLACK_TXT),
+        ("\033[45m", WHITE_TXT),
+        ("\033[102m", BLACK_TXT),
+        ("\033[104m", WHITE_TXT),
+        ("\033[43m", BLACK_TXT),
+        ("\033[101m", WHITE_TXT),
+        ("\033[42m", BLACK_TXT),
+        ("\033[105m", WHITE_TXT),
+        ("\033[46m", BLACK_TXT),
+        ("\033[100m", WHITE_TXT),
+    ]
+            </code></pre>
+            <div class="explanation">
+                <p><strong>Goal:</strong> The <code>Colors</code> class is not a function, but a <strong>container for our color codes</strong>. Think of it as an organized box of paint pots.</p>
+                <p><strong>High-End Concept (ANSI Escape Codes):</strong> The strange character strings like <code>\033[96m</code> are so-called <strong>ANSI escape codes</strong>. This is a secret language that almost every modern terminal understands. <code>\033[</code> is the start signal, followed by a code that tells the terminal what to do (e.g., <code>96m</code> for "switch text color to ice blue"). <code>\033[0m</code> is the universal "reset" command.</p>
+                <p><strong>Why a class?</strong> We pack all these codes into a class to organize them. Instead of remembering the code <code>\033[96m</code>, we simply write <code>Colors.ICE_BLUE</code>. This makes the code <strong>more readable and maintainable</strong>.</p>
+                <p><strong><code>COLOR_PAIRS</code> (The Design Matrix):</strong> This is a list of pairs (tuples). Each pair contains a code for the <strong>background color</strong> and one for the <strong>text color</strong>. This is the foundation for our colorful "pills" in the live banner.</p>
+            </div>
+        </div>
+        
+        <h4>Function: <code>pill(label)</code></h4>
+        <div class="code-block">
+            <pre><code class="language-python">
+LABEL_INDEX = {
+    "ipv6-active": 5, "link-local": 5, "cookie-found": 4,
+    "GET": 9, "POST": 9, "OPTIONS": 9, "HEAD": 9,
+    "ssh": 0, "http": 3, "https": 3, "python-http": 9,
+    "wpconfig": 8, "admin_panel": 8,
+}
+
+def pill(label):
+    if label in LABEL_INDEX:
+        idx = LABEL_INDEX[label]
+    else:
+        idx = (sum(ord(c) for c in label) + len(label))
+    pair = Colors.COLOR_PAIRS[idx % len(Colors.COLOR_PAIRS)]
+    return f"{pair[0]}{pair[1]} {label} {Colors.RESET}"
+            </code></pre>
+            <div class="explanation">
+                <p><strong>Goal:</strong> This function is an artist. Its job is to turn a simple text label (e.g., "http") into a colorful, stylish "pill" for the banner.</p>
+                <p><strong>High-End Concept 1: <code>sum(ord(c) for c in label)</code></strong></p>
+                <ul>
+                    <li><code>ord(c)</code>: Every character in a computer has a number (its "ordinal" value). 'a' is 97, 'b' is 98, etc.</li>
+                    <li><code>for c in label</code>: This is a loop that goes through every character in the <code>label</code>.</li>
+                    <li><code>sum(...)</code>: This whole thing is a "Generator Expression" - a super-compact way of writing this in Python. It calculates the sum of the numerical values of all characters in the label.</li>
+                </ul>
+                <p><strong>Why?</strong> The result is a <strong>unique number for every word.</strong> We use this number to select a "random-looking" but always <strong>consistent (deterministic)</strong> color from our <code>COLOR_PAIRS</code> list. This way, "http" always has the same color, but we don't have to manually define a color for every possible word.</p>
+                <p><strong>High-End Concept 2: <code>idx % len(Colors.COLOR_PAIRS)</code></strong></p>
+                <ul>
+                    <li><code>len(Colors.COLOR_PAIRS)</code>: Gives us the number of available color pairs (e.g., 13).</li>
+                    <li><code>%</code> (Modulo Operator): This is the "remainder" operator. <code>20 % 13</code> is 7. <code>13 % 13</code> is 0. It ensures that the result is <strong>always</strong> a valid index number for our color list (between 0 and 12). A brilliant trick to never get an "Index out of bounds" error.</li>
+                </ul>
+            </div>
+        </div>
+        
+        <h4>Function: <code>print_live_banner(scan_mode, findings)</code></h4>
+        <div class="code-block">
+            <pre><code class="language-python">
+def print_live_banner(scan_mode, findings):
+    try:
+        width = shutil.get_terminal_size().columns
+    except OSError:
+        width = 100
+
+    mode_bg = "\033[42m" if scan_mode == "internal" else "\033[41m"
+    mode_fg = Colors.BLACK_TXT if scan_mode == "internal" else Colors.WHITE_TXT
+
+    print(f"\n{mode_bg}{mode_fg} {scan_mode.upper()} {Colors.RESET}")
+    print(f"{Colors.SEPARATOR}{'─' * width}{Colors.RESET}")
+
+    title = " Live - Finding - System "
+    total_padding = width - len(title)
+    pad_left = total_padding // 2
+    pad_right = total_padding - pad_left
+
+    print(f"{Colors.TURQ_BG}{' ' * pad_left}{Colors.HEADER_TEXT_STYLE}{title}{Colors.TURQ_BG}{' ' * pad_right}{Colors.RESET}")
+    print(f"{Colors.SEPARATOR}{'─' * width}{Colors.RESET}")
+
+    display_order = ["ipv6", "nmap", "webserver", "methods", "cookie", "nikto", "ferox"]
+    for category in display_order:
+        labels = findings.get(category, set())
+        display_name = "dirscan" if category == "ferox" else ("ports" if category == "nmap" else category)
+
+        prefix = f"{display_name:<10}: "
+        print(prefix, end="")
+        line_len = len(prefix)
+
+        if not labels:
+            print(f"{Colors.PLACEHOLDER} [x][x][x] {Colors.RESET}")
+        else:
+            for label in sorted(labels):
+                p = pill(label)
+                p_len = len(label) + 2
+                if line_len + p_len >= width:
+                    print("\n" + " " * len(prefix), end="")
+                    line_len = len(prefix)
+                print(p, end=" ")
+                line_len += p_len
+            print()
+    print(f"{Colors.SEPARATOR}{'─' * width}{Colors.RESET}")
+            </code></pre>
+            <div class="explanation">
+                <p><strong>Goal:</strong> This is the main function of this module. It draws the complete situation report that the user sees during the scans.</p>
+                <p><strong>Line 3: <code>width = shutil.get_terminal_size().columns</code></strong> - An extremely important command. Instead of assuming a fixed width, this function asks the operating system: "How wide is the user's terminal window right now?". This allows the banner to <strong>dynamically adapt to any window size</strong>.</p>
+                <p><strong>Line 9: <code>mode_bg = ... if scan_mode == "internal" else ...</code></strong> - This is a "Ternary Expression," the shorthand for an if/else statement. It chooses the background color (green or red) based on the scan mode.</p>
+                <p><strong>Line 15-18 (Centering):</strong> An elegant solution for centering text. It calculates the total width, subtracts the length of the title, and divides the rest into left and right "padding" (filler space).</p>
+                <p><strong>Line 27: <code>labels = findings.get(category, set())</code></strong> - A safe grab into our notebook (the <code>findings</code> dictionary). <code>.get(key, default)</code> tries to fetch the entry for a category. If the category doesn't exist (yet), it doesn't return an error but simply an empty <code>set()</code>. This makes the code robust.</p>
+                <p><strong>Line 36: <code>sorted(labels)</code></strong> - Ensures that the found "pills" are always displayed in alphabetical order. This creates a calm, consistent picture instead of having the pills jump around wildly with every update.</p>
+            </div>
+        </div>
+    </div>
+    <!-- ======================= END OF CHAPTER 2 ======================= -->
+
+
+<li><a href="#module-utils">Chapter 3: utils.py (The Swiss Army Knife)</a></li>
+
+<!-- ======================= CHAPTER 3: UTILS.PY ======================= -->
+    <div id="module-utils" class="module-chapter">
+        <h2>Chapter 3: utils.py</h2>
+        <h3>🎯 Mission of the Module</h3>
+        <p>
+            Every army needs engineers and logisticians. The <code>utils.py</code> module is exactly that: our <strong>Swiss Army Knife</strong>. It contains fundamental helper functions that are repeatedly called by other parts of the program. The most critical mission of this module is the <strong>weapon check (<code>check_dependencies</code>)</strong>, which ensures that all our "soldiers" (external tools like Nmap) are present and ready for battle before the engagement begins.
+        </p>
+
+        <h3>⚔️ The Armory (Libraries)</h3>
+        <div class="import-grid">
+            <div class="import-card" title="Gives us access to system utilities, e.g., to find the paths of programs.">shutil</div>
+            <div class="import-card" title="Allows interaction with the Python interpreter itself, e.g., to exit the program.">sys</div>
+            <div class="import-card" title="Starts external programs (our soldiers).">subprocess</div>
+            <div class="import-card" title="Enables communication with the operating system.">os</div>
+        </div>
+        
+        <h3>Line-by-Line Code Analysis</h3>
+        
+        <h4>Function: <code>check_dependencies()</code></h4>
+        <div class="code-block">
+            <pre><code class="language-python">
+import shutil
+import sys
+import subprocess
+import os
+
+def check_dependencies():
+    print("[+] Checking toolchain...")
+
+    required_tools = [
+        "nmap", "nikto", "feroxbuster", "curl", "wpscan",
+        "joomscan", "hydra", "rpcclient", "enum4linux", "wget"
+    ]
+
+    missing_tools = []
+
+    for tool in required_tools:
+        if shutil.which(tool) is None:
+            missing_tools.append(tool)
+
+    if missing_tools:
+        print(f"[ERROR] The following tools are missing: {', '.join(missing_tools)}")
+
+        answer = input(
+            "Should Recon Monster attempt to install them automatically? "
+            "(apt-get will be used) [y/N]: "
+        )
+
+        if answer.lower() == 'y':
+            print("[+] Attempting to install missing tools...")
+
+            sudo_prefix = [] if os.getuid() == 0 else ["sudo"]
+
+            try:
+                update_command = sudo_prefix + ["apt-get", "update"]
+                subprocess.run(update_command, check=True)
+
+                install_command = sudo_prefix + ["apt-get", "install", "-y"] + missing_tools
+                subprocess.run(install_command, check=True)
+
+                print("[+] Installation successful! Re-checking dependencies...")
+                check_dependencies()
+
+            except subprocess.CalledProcessError:
+                print("[ERROR] Automatic installation failed. Please install the tools manually.")
+                sys.exit(1)
+
+            except FileNotFoundError:
+                print("[ERROR] 'sudo' or 'apt-get' not found. Please install dependencies manually.")
+                sys.exit(1)
+        else:
+            print("[ERROR] Aborted by user. Please install the missing tools manually.")
+            sys.exit(1)
+    else:
+        print("[+] All required tools are installed and ready.")
+            </code></pre>
+            <div class="explanation">
+                <p><strong>Goal:</strong> This function is our armorer. It ensures the tool doesn't crash mid-battle because an external program is missing. It checks the entire arsenal and even offers to automatically acquire missing weapons.</p>
+                <p><strong>Line 9: <code>required_tools = [...]</code></strong> - This is the official equipment list. Every tool we need for our scans is listed here.</p>
+                <p><strong>High-End Concept: <code>shutil.which(tool)</code> (Line 16)</strong></p>
+                <ul>
+                    <li>Think of <code>shutil.which()</code> as a scout that runs through the entire operating system and asks: "Is there an executable program named 'nmap' anywhere in the standard paths?".</li>
+                    <li>If it finds it, it returns the full path (e.g., <code>/usr/bin/nmap</code>).</li>
+                    <li>If it **doesn't** find it, it returns <code>None</code> (Nothing).</li>
+                    <li>This single line is the core of the entire weapon check. It's extremely reliable and works across Linux, macOS, and Windows. The <code>is None</code> check is the Pythonic way to see if the scout came back empty-handed.</li>
+                </ul>
+                <p><strong>Automatic Installation (Lines 27-46):</strong> This is an advanced feature and extremely user-friendly.
+                    <ul>
+                        <li><strong>Line 27:</strong> Asks the user if they want an automatic installation.</li>
+                        <li><strong>Line 35: <code>subprocess.run(..., check=True)</code></strong> - Unlike <code>Popen</code> which starts a process and moves on, <code>run</code> starts a process and **waits for it to finish**. The parameter <code>check=True</code> is a built-in safety feature: if the command fails (e.g., because a package wasn't found), it immediately raises a <code>CalledProcessError</code> exception, which we can catch in our <code>except</code> block.</li>
+                        <li><strong>Line 42: <code>check_dependencies()</code></strong> - A brilliant, recursive move. After the installation attempt, the function calls itself again to verify that all weapons are now truly present.</li>
+                    </ul>
+                </p>
+                <p><strong>The Emergency Exit (Line 48): <code>sys.exit(1)</code></strong> - If tools are missing and the user declines installation (or it fails), this is the red button. <code>sys.exit(1)</code> terminates the program immediately and uncompromisingly. The number <code>1</code> is a standard code to signal to the operating system: "The mission was aborted with an error."</p>
+            </div>
+        </div>
+    </div>
+    <!-- ======================= END OF CHAPTER 3 ======================= -->
+
+<li><a href="#module-scans">Chapter 4: scans.py (The Battle Plan)</a></li>
+
+<!-- ======================= CHAPTER 4: SCANS.PY ======================= -->
+    <div id="module-scans" class="module-chapter">
+        <h2>Chapter 4: scans.py</h2>
+        <h3>🎯 Mission of the Module</h3>
+        <p>
+            If <code>live_recon.py</code> is the conductor, then <code>scans.py</code> is the <strong>sheet music</strong>. This module is not an active weapon, but the <strong>strategic battle plan</strong> for our entire operation. It contains a single, crucial variable: <code>SCANS_TO_RUN</code>. This is an ordered list that precisely defines <strong>which scans</strong> are executed, in <strong>what order</strong>, and with <strong>which parameters</strong>. The beauty of this approach is its extreme flexibility: to change, add, or remove a scan, we only need to adjust this one "sheet music," not the complex logic of the conductor.
+        </p>
+
+        <h3>⚔️ The Armory (Libraries)</h3>
+        <div class="import-grid">
+            <div class="import-card">No Imports</div>
+        </div>
+        <p>This module is pure configuration. It requires no external libraries to fulfill its mission. It is a pure data module.</p>
+        
+        <h3>Line-by-Line Code Analysis</h3>
+        
+        <h4>The Data Structure: <code>SCANS_TO_RUN</code></h4>
+        <div class="code-block">
+            <pre><code class="language-python">
+SCANS_TO_RUN = [
+    {
+        "name": "IPv6 Discovery Scan",
+        "command": ["ping6", "-c", "3", "ff02::1"]
+    },
+    {
+        "name": "Curl - HTTP Headers",
+        "command": ["curl", "-I", "-L", "-v", "http://{TARGET}", "-s"]
+    },
+    # ... more scan definitions ...
+    {
+        "name": "Nmap Full Scan",
+        "command": ["nmap", "-sS", "-sC", "-sV", "-p-", "-Pn", 
+                    "--min-rate", "5000", "-oA", "logs/{TARGET}/nmap_full",
+                    "-oJ", "logs/{TARGET}/nmap_full.json", "{TARGET}"]
+    },
+    {
+        "name": "Feroxbuster Scan",
+        "command": [
+            "feroxbuster",
+            "-u", "http://{TARGET}",
+            "-w", "/usr/share/seclists/Discovery/Web-Content/directory-list-2.3-medium.txt",
+            "-x", "txt,php,rar,zip,tar...",
+            # ... more feroxbuster flags
+        ]
+    }
+]
+            </code></pre>
+            <div class="explanation">
+                <p><strong>Goal:</strong> This single variable is the brain of the entire operation. It is a <strong>list of dictionaries</strong>.</p>
+                <p><strong>The Architecture (High-End Concept):</strong> Each element in the list is a dictionary (an "index card") that describes a single scan. This index card always has two drawers:
+                    <ul>
+                        <li><code>"name"</code>: A human-readable name for the scan, which is displayed in the live banner (e.g., "Nmap Full Scan").</li>
+                        <li><code>"command"</code>: A list of strings that represents the exact command and its parameters.</li>
+                    </ul>
+                </p>
+                <p><strong>The <code>{TARGET}</code> Placeholder (Architectural Masterstroke):</strong> Instead of hardcoding the target in every command, the generic placeholder <code>{TARGET}</code> is used. The command center (<code>live_recon.py</code>) is responsible for replacing this placeholder with the actual target at runtime. This makes the battle plan <strong>reusable and extremely flexible</strong>.</p>
+                <p><strong>Analysis of the Commands:</strong> The commands themselves are those of a professional.
+                    <ul>
+                        <li><strong>Nmap:</strong> The parameters <code>--min-rate 5000</code> and -<code>Pn</code> command Nmap to be extremely aggressive and fast, skipping the host discovery phase. <code>-oA</code> and <code>-oJ</code> are orders to Nmap to save the results in all major formats (normal, XML, grepable) AND as a JSON file. The JSON file is the foundation for our later in-depth analysis.</li>
+                        <li><strong>Feroxbuster:</strong> This command is a great example of a real-world setup. It uses a specific, high-quality wordlist (<code>directory-list-2.3-medium.txt</code> from SecLists), defines a huge list of interesting file extensions with <code>-x</code>, ignores common "noise" status codes with <code>-C</code>, and outputs everything as a clean JSON file for our parser.</li>
+                    </ul>
+                </p>
+                <p><strong>The Order is Crucial:</strong> The scans are executed in the exact order they appear in this list. Light, fast scans like <code>curl</code> are placed at the beginning to provide quick initial results, while the long, intensive scans like the Nmap Full Scan come later. This is a strategic decision to maximize the "live" feeling of the tool.</p>
+            </div>
+        </div>
+    </div>
+    <!-- ======================= END OF CHAPTER 4 ======================= -->
+
+<li><a href="#module-nmap-loader">Chapter 5: nmap_services_loader.py (The Ammunition Box)</a></li>
+
+<!-- ======================= CHAPTER 5: NMAP_SERVICES_LOADER.PY ======================= -->
+    <div id="module-nmap-loader" class="module-chapter">
+        <h2>Chapter 5: nmap_services_loader.py</h2>
+        <h3>🎯 Mission of the Module</h3>
+        <p>
+            Think of this module as the <strong>ammunition store and enemy database</strong> of our operation. A soldier in the field who sees a tank doesn't report "big gray thing"; he reports "T-72 tank." For that, he needs a database in his head. This module provides exactly that: it contains the "intelligence" in the form of Python dictionaries (our databases), which allow the <code>live_parser</code> to turn raw scan results (like "Port 80 is open") into concrete, valuable information (like "HTTP web server found"). It is pure, hardcoded knowledge.
+        </p>
+
+        <h3>⚔️ The Armory (Libraries)</h3>
+        <div class="import-grid">
+            <div class="import-card">No Imports</div>
+        </div>
+        <p>This module, similar to <code>scans.py</code>, is a pure data module. It is a collection of knowledge and requires no active libraries to fulfill its mission.</p>
+        
+        <h3>Line-by-Line Code Analysis</h3>
+        
+        <h4>The Data Structure: <code>NMAP_SPECIALS</code></h4>
+        <div class="code-block">
+            <pre><code class="language-python">
+NMAP_SPECIALS = {
+    "anonymous ftp login allowed": "ftp_anon",
+    "wp-config": "wpconfig",
+    "robots.txt": "robots",
+    "id_rsa": "ssh_key",
+    "microsoft windows": "windows_host",
+    "guest login": "smb_guest",
+    "sql server": "mssql_db",
+    "php version": "php_info",
+    "apache tomcat": "tomcat",
+    "nagios": "nagios",
+    "webmin": "webmin",
+    "moodle": "moodle",
+    "joomla": "joomla",
+    "wordpress": "wordpress"
+}
+            </code></pre>
+            <div class="explanation">
+                <p><strong>Goal:</strong> <code>NMAP_SPECIALS</code> is our "Most Wanted" list for text-based findings. It is a <strong>Python dictionary</strong>, a type of intelligent index card box.</p>
+                
+                <p><strong>The Architecture (High-End Concept: Key-Value Store):</strong> A dictionary always stores data in <strong>key-value pairs</strong>.
+                    <ul>
+                        <li><strong>The Key:</strong> This is the text we are searching for in the scan output. In our case, it's an exact, revealing string that points to an important technology or vulnerability. Example: <code>"anonymous ftp login allowed"</code>. The key is always unique.</li>
+                        <li><strong>The Value:</strong> This is the short, clean label we want to display in the live banner when the key is found. Example: <code>"ftp_anon"</code>.</li>
+                    </ul>
+                </p>
+
+                <p><strong>Derivation of the Function (Why was it built this way?):</strong>
+                    Imagine we didn't have this dictionary. The <code>live_parser</code> would then need a huge, confusing block of <code>if/elif/else</code> statements:
+                    <br><code>if "anonymous ftp login allowed" in line:</code><br>
+                    <code>    live_findings["nmap"].add("ftp_anon")</code><br>
+                    <code>elif "wp-config" in line:</code><br>
+                    <code>    live_findings["nmap"].add("wpconfig")</code><br>
+                    ...and so on. That would be a nightmare to maintain and expand.
+                </p>
+                <p>
+                    <strong>The Brilliant Solution:</strong> We outsource the entire "intelligence" to this dictionary. The <code>live_parser</code> can now use a <strong>single, elegant loop</strong> to process the entire list: <code>for key, value in NMAP_SPECIALS.items(): if key in line: ...</code>. To add a new signature, we only need to add a new line to this dictionary instead of changing the complex logic of the parser. <strong>This decouples the data from the logic</strong> – a core principle of good software architecture.
+                </p>
+            </div>
+        </div>
+    </div>
+    <!-- ======================= END OF CHAPTER 5 ======================= -->
+
+<li><a href="#module-live-parser">Chapter 6: live_parser.py (The Real-Time Spy)</a></li>
+
+<!-- ======================= CHAPTER 6: LIVE_PARSER.PY ======================= -->
+    <div id="module-live-parser" class="module-chapter">
+        <h2>Chapter 6: live_parser.py</h2>
+        <h3>🎯 Mission of the Module</h3>
+        <p>
+            Think of this module as a highly specialized <strong>Signal Intelligence Officer and Spy</strong>. Its mission is to intercept the continuous stream of raw data (<code>line</code>) coming in from our soldiers (the scan tools) in real-time. It must analyze every single message, filter out the "noise" (unimportant information), and identify only the <strong>critical "Live Hits."</strong> It immediately reports this valuable intelligence to the command center (<code>live_findings</code>) so that the situation map in the live banner can be updated. Without this spy, our live banner would be useless.
+        </p>
+
+        <h3>⚔️ The Armory (Libraries)</h3>
+        <div class="import-grid">
+            <div class="import-card" title="The master weapon for detecting text patterns.">re (Regular Expressions)</div>
+            <div class="import-card" title="Reads and writes the universal data format JSON.">json</div>
+            <div class="import-card" title="Our own enemy database for special signatures.">nmap_services_loader</div>
+        </div>
+        
+        <h3>Line-by-Line Code Analysis</h3>
+        
+        <h4>Function: <code>remove_ansi(text)</code></h4>
+        <div class="code-block">
+            <pre><code class="language-python">
+import re
+import json
+from nmap_services_loader import NMAP_SPECIALS
+
+def remove_ansi(text):
+    ansi_escape = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
+    return ansi_escape.sub('', text)
+            </code></pre>
+            <div class="explanation">
+                <p><strong>Goal:</strong> This function is our "decontamination unit." Many command-line tools use invisible <strong>ANSI escape codes</strong> to color their output. For our script, however, this is just interfering data noise. This function cleans the text from all these invisible control characters.</p>
+                <p><strong>High-End Concept: <code>re.compile(...)</code></strong></p>
+                <ul>
+                    <li>Instead of "thinking" about a regex pattern anew with every search, <code>re.compile()</code> tells Python: "Hey, we'll be using this pattern often. Analyze it once, compile it into super-fast machine code, and save it." This is a <strong>performance optimization</strong>. With hundreds or thousands of lines to parse, this makes a noticeable difference.</li>
+                    <li>The pattern itself is a complex regex specifically built to recognize and catch all possible variations of ANSI codes.</li>
+                </ul>
+                <p><strong>Line 8: <code>return ansi_escape.sub('', text)</code></strong> - The <code>.sub()</code> command (substitute) is the execution. It takes the compiled regex, searches for all matches in the <code>text</code>, and replaces them with an empty string (<code>''</code>) – effectively deleting them.</p>
+            </div>
+        </div>
+
+        <h4>Function: <code>parse_line(tool_name, line, live_findings)</code></h4>
+        <div class="code-block">
+            <pre><code class="language-python">
+def parse_line(tool_name, line, live_findings):
+    clean_line = remove_ansi(line).strip()
+    l = clean_line.lower()
+
+    if "nmap" in tool_name.lower():
+        # ... Nmap Parsing Logic ...
+    
+    if "ferox" in tool_name.lower() or "gobuster" in tool_name.lower():
+        # ... Feroxbuster/Gobuster Parsing Logic ...
+
+    if "ipv6" in tool_name.lower():
+        # ... IPv6 Parsing Logic ...
+    
+    # ... and so on for Nikto and Curl
+            </code></pre>
+            <div class="explanation">
+                <p><strong>Goal:</strong> This is the spy's brain. This function is a large switchboard that decides how a line is analyzed based on which tool it came from.</p>
+                <p><strong>Preparation (Lines 2-3):</strong> First, the line is sent through our decontamination unit (<code>remove_ansi</code>). <code>.strip()</code> then removes any remaining spaces at the beginning and end. Only then is the clean line converted to lowercase for analysis.</p>
+                <p><strong>The <code>if</code> Cascade (The Specialist Departments):</strong> The function is like an intelligence agency with different departments. <code>if "nmap" in tool_name.lower():</code> asks: "Is this message from our Nmap agent?". If yes, the line is passed to the Nmap specialists. If not, the next department is asked. Each <code>if</code> block is a highly specialized analysis unit for a specific tool.</p>
+                
+                <p><strong>High-End Concept (Derivation of the Architecture):</strong> Instead of writing a huge, unreadable function that does everything, we have a clean <strong>"Single Responsibility"</strong> architecture here. The <code>parse_line</code> function is just the <strong>dispatcher</strong>. The actual, complex logic for each tool is encapsulated in its own isolated <code>if</code> block. If we want to add a new parser for a new tool (e.g., "sqlmap") in the future, we just need to add a new <code>if "sqlmap" in tool_name.lower():</code> block without touching the rest of the code. This is modular, clean, and maintainable.</p>
+            </div>
+        </div>
+
+        <h4>Parsing in Detail: The <code>nmap</code> Block</h4>
+        <div class="code-block">
+            <pre><code class="language-python">
+# ... inside the nmap if-block
+match = re.search(r"(\d+)/(tcp|udp)\s+open\s+(.*)", l)
+if match:
+    full_service_line = match.group(3)
+    # ...
+    if "openssh" in full_service_line:
+        live_findings["nmap"].add("openssh")
+        live_findings["nmap"].discard("ssh")
+        specific_found = True
+    # ... (similar blocks for apache, nginx, etc.)
+
+    ignore_list = ["unknown", "tcpwrapped", "service"]
+    if not specific_found and base_service not in ignore_list:
+        live_findings["nmap"].add(base_service)
+            </code></pre>
+            <div class="explanation">
+                 <p><strong>Goal:</strong> This block refines the Nmap results. Instead of just reporting "http", we want to know if it's "http-apache" or "http-nginx".</p>
+                 <p><strong>The Regex (<code>re.search(...)</code>):</strong> This is a surgical strike to capture open ports. <code>(.*)</code> at the end is a greedy wildcard that says "capture everything until the end of the line". This gives us the full service description (e.g., "http Apache httpd 2.4.41").</p>
+                 <p><strong>High-End Concept: <code>.discard("ssh")</code> vs. <code>.remove("ssh")</code></strong></p>
+                 <ul>
+                    <li>This is the move of a pro. When we find "openssh", we know it's more specific than the generic "ssh". We want to remove the generic label from our notebook (the <code>set</code>).</li>
+                    <li><code>.remove("ssh")</code> would crash if "ssh" was not yet in the set.</li>
+                    <li><code>.discard("ssh")</code> is the killer move: It tries to remove "ssh". If it's there, it's gone. If not, **nothing happens.** No error, no crash. This makes the code extremely robust.</li>
+                 </ul>
+                 <p><strong>Derivation of the Logic:</strong> The <code>specific_found</code> variable is our memory. It remembers if we've already had a very specific hit. Only if at the end <strong>no</strong> specific hit was found (<code>if not specific_found</code>), do we add the general service (<code>base_service</code>). This prevents the banner from being cluttered with redundant, generic labels like "http" when we already know the much more valuable "http-apache".</p>
+            </div>
+        </div>
+
+        <h4>Parsing in Detail: The <code>curl</code> Block</h4>
+        <div class="code-block">
+            <pre><code class="language-python">
+# ... inside the curl if-block
+if "allow:" in l:
+    methods = l.split("allow:", 1)[1].strip()
+    for m in methods.split(","):
+        m_clean = m.strip().upper()
+        if m_clean:
+            live_findings["methods"].add(m_clean)
+            </code></pre>
+            <div class="explanation">
+                <p><strong>Goal:</strong> This part of the spy specializes in reading HTTP headers from the <code>curl</code> output.</p>
+                <p><strong>High-End Concept: <code>.split("allow:", 1)[1]</code></strong> - This is a precision cut to extract data.
+                    <ol>
+                        <li><code>.split("allow:", 1)</code>: This command splits the line into two parts exactly at the first occurrence of "allow:". The <code>1</code> is crucial; it means "split only once". The result is a list with two items: `['everything before allow:', 'everything after allow:']`.</li>
+                        <li><code>[1]</code>: We take the second item from this list (index 1), which is exactly the text we want (e.g., "GET, HEAD, POST").</li>
+                        <li><code>.strip()</code>: The cleaner removes any leftover spaces.</li>
+                    </ol>
+                This one-liner is a highly efficient and clean way to extract specific values from a line of text.
+                </p>
+            </div>
+        </div>
+    </div>
+    <!-- ======================= END OF CHAPTER 6 ======================= -->
+<li><a href="#module-nmap-runner">Chapter 7: nmap_runner.py (Special Forces Planning)</a></li>
+
+<!-- ======================= CHAPTER 7: NMAP_RUNNER.PY ======================= -->
+    <div id="module-nmap-runner" class="module-chapter">
+        <h2>Chapter 7: nmap_runner.py</h2>
+        <h3>🎯 Mission of the Module</h3>
+        <p>
+            If the live-parser is the spy on the front line, then the <code>NmapRunner</code> is the <strong>intelligence analyst in the headquarters</strong>. Its mission begins *after* the main Nmap scan is complete. It takes the full, extremely detailed JSON report from Nmap, spreads it out on its analysis table, and looks for strategic targets for the <strong>second wave of attack</strong>. It then recommends a list of targeted follow-up missions (subroutines) to the command center, to be executed by our special forces (<code>nmap_subroutines.py</code>).
+        </p>
+
+        <h3>⚔️ The Armory (Libraries)</h3>
+        <div class="import-grid">
+            <div class="import-card" title="Reads and writes the universal data format JSON.">json</div>
+        </div>
+        
+        <h3>Line-by-Line Code Analysis</h3>
+        
+        <h4>The `NmapRunner` Class (The Analysis Unit)</h4>
+        <div class="code-block">
+            <pre><code class="language-python">
+import json
+
+class NmapRunner:
+    def __init__(self, json_file_path):
+        self.nmap_data = self._load_json(json_file_path)
+        self.tasks_to_run = []
+
+    def _load_json(self, file_path):
+        try:
+            with open(file_path, 'r') as f:
+                return json.load(f)
+        except (json.JSONDecodeError, FileNotFoundError):
+            return None
+            </code></pre>
+            <div class="explanation">
+                <p><strong>Goal:</strong> This is the blueprint for our analyst. A <strong>class</strong> is like a blueprint for an object. Every time we call <code>NmapRunner</code>, we create a new, fresh instance of this analyst, who has their own set of data and tasks.</p>
+                <p><strong>High-End Concept: <code>__init__(self, ...)</code></strong> - This is the "constructor" of the class, the function that is automatically called when the object is created. Think of it as the analyst's "boot-up protocol."
+                    <ul>
+                        <li><code>self</code>: Is the most important word in a class. It is the object's reference to itself. It allows it to store and access its own data (like <code>self.nmap_data</code>).</li>
+                        <li><code>self.nmap_data = self._load_json(...)</code>: As soon as the analyst is "born," their first official act is to load the JSON evidence file.</li>
+                        <li><code>self.tasks_to_run = []</code>: They grab an empty notepad to write down the identified follow-up missions.</li>
+                    </ul>
+                </p>
+                <p><strong>Function <code>_load_json</code> (Evidence Intake):</strong> The <code>_</code> at the beginning of the name is a convention in Python. It signals to other developers: "This is an internal helper function, not to be called from the outside." The function itself is built robustly: it uses <code>try...except</code> to catch the two most common errors: the file does not exist (<code>FileNotFoundError</code>) or it contains broken JSON (<code>json.JSONDecodeError</code>).</p>
+            </div>
+        </div>
+
+        <h4>Function: <code>run_analysis(self)</code></h4>
+        <div class="code-block">
+            <pre><code class="language-python">
+    def run_analysis(self):
+        if not self.nmap_data:
+            print("[ERROR] Nmap JSON log could not be loaded or parsed.")
+            return []
+
+        for host in self.nmap_data.get('hosts', []):
+            for port in host.get('ports', []):
+                port_id = port.get('portid')
+                service = port.get('service', {})
+                service_name = service.get('name', 'unknown')
+                scripts = port.get('scripts', [])
+
+                if service_name == 'ftp':
+                    is_anon = False
+                    for script in scripts:
+                        if (
+                            script.get('id') == 'ftp-anon'
+                            and 'Anonymous FTP login allowed' in script.get('output', '')
+                        ):
+                            self.tasks_to_run.append('ftp_anon_get')
+                            is_anon = True
+                            break
+                    if not is_anon:
+                        self.tasks_to_run.append('ftp_brute')
+
+                if service_name == 'telnet':
+                    self.tasks_to_run.append('telnet_brute')
+
+                if service_name == 'domain':
+                    self.tasks_to_run.append('dns_axfr')
+
+                if 'netbios-ssn' in service_name or 'microsoft-ds' in service_name:
+                    self.tasks_to_run.append('smb_enum')
+                    if 'Microsoft Windows' in host.get('osmatch', [{}])[0].get('name', ''):
+                        self.tasks_to_run.append('smb_nullsession')
+
+        return list(set(self.tasks_to_run))
+            </code></pre>
+            <div class="explanation">
+                <p><strong>Goal:</strong> This is the analyst's brain. This function combs through the loaded JSON data and applies a series of "if-then" rules to identify follow-up missions.</p>
+                <p><strong>High-End Concept (Safe Dictionary Navigation):</strong> The expression <code>self.nmap_data.get('hosts', [])</code> is the professional way to navigate through complex JSON data. <code>.get('key', default)</code> tries to find the key 'hosts'. If the key doesn't exist (e.g., because the Nmap scan failed), the command doesn't raise an error but simply returns an empty list <code>[]</code>. The loop then simply runs zero times, and the program doesn't crash. This makes the code extremely fault-tolerant.</p>
+                <p><strong>Derivation of the Logic (FTP Example):</strong>
+                    <ul>
+                        <li><strong>Line 14:</strong> If the analyst finds an FTP service...</li>
+                        <li><strong>Lines 16-22:</strong> ...they search through the results of the Nmap Scripting Engine (<code>scripts</code>). They specifically look for the result of the <code>ftp-anon</code> script. If this script reports that an anonymous login is allowed, the highly specialized mission <code>'ftp_anon_get'</code> is added to the notepad.</li>
+                        <li><strong>Lines 23-24:</strong> Only if <strong>no</strong> anonymous login is possible (<code>if not is_anon</code>), is the brute-force mission <code>'ftp_brute'</code> added. This is a smart prioritization: we first try the easy, quiet way before we bring out the loud artillery (Hydra).</li>
+                    </ul>
+                </p>
+                <p><strong>High-End Concept (Line 41): <code>return list(set(self.tasks_to_run))</code></strong></p>
+                <ul>
+                    <li>During the analysis, it's possible for a task to be added to the notepad multiple times.</li>
+                    <li><code>set(self.tasks_to_run)</code>: We convert our list into a <code>set</code>. The superpower of the set comes into play and instantly throws out all duplicates.</li>
+                    <li><code>list(...)</code>: Afterwards, we convert the clean set back into a normal list, which we return to the command center.</li>
+                    <li>This single line is an extremely elegant and efficient Python trick to clean a list of duplicates with a single command.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <!-- ======================= END OF CHAPTER 7 ======================= -->
+<li><a href="#module-nmap-subroutines">Chapter 8: nmap_subroutines.py (The Special Forces)</a></li>
+
+<!-- ======================= CHAPTER 8: NMAP_SUBROUTINES.PY ======================= --> 
+    <div id="module-nmap-subroutines" class="module-chapter">
+        <h2>Chapter 8: nmap_subroutines.py</h2>
+        <h3>🎯 Mission of the Module</h3>
+        <p>
+            If <code>NmapRunner</code> is the planner, then this module is the <strong>executing Special Forces unit (Task Force)</strong>. Every function in this file is a <strong>"Subroutine"</strong> – a self-contained, highly specialized mission designed for a very specific scenario. These missions are not executed by default; only when the <code>NmapRunner</code> analyst gives the green light. This is the core of our "intelligent" reconnaissance: we don't waste ammunition, we only deploy our best weapons when we have identified a worthy target.
+        </p>
+
+        <h3>⚔️ The Armory (Libraries)</h3>
+        <div class="import-grid">
+            <div class="import-card">None (in this example)</div>
+        </div>
+        <p>In the current version, these functions only contain <code>print</code> statements as placeholders. In the final version, the necessary libraries (like <code>subprocess</code> to start Hydra or Wget) would be imported here.</p>
+        
+        <h3>Line-by-Line Code Analysis</h3>
+        
+        <h4>The Subroutines (The Attack Plans)</h4>
+        <div class="code-block">
+            <pre><code class="language-python">
+def ftp_anon_get(target):
+    print(f"\n>>> SUBROUTINE STARTED: ftp_anon_get on {target}")
+    print(">>> ACTION: Attempting to recursively download the entire FTP server...")
+    # The `wget -m ...` command would go here
+
+def ftp_brute(target):
+    print(f"\n>>> SUBROUTINE STARTED: ftp_brute on {target}")
+    print(">>> ACTION: Starting Hydra brute-force against the FTP service...")
+
+def dns_axfr(target):
+    print(f"\n>>> SUBROUTINE STARTED: dns_axfr on {target}")
+    print(">>> ACTION: Attempting a DNS Zone Transfer...")
+
+def smb_enum(target):
+    print(f"\n>>> SUBROUTINE STARTED: smb_enum on {target}")
+    print(">>> ACTION: Starting enum4linux for comprehensive SMB enumeration...")
+
+# ... and so on for telnet_brute, smb_nullsession etc.
+            </code></pre>
+            <div class="explanation">
+                <p><strong>Goal:</strong> Each of these functions is a self-contained attack plan for a specific scenario.</p>
+                <p><strong>High-End Concept (Dynamic Function Calling):</strong> The magic lies not in the functions themselves, but in <strong>how they are called</strong>. Let's look back at Chapter 1 (<code>live_recon.py</code>):
+                <br><code>fn = getattr(nmap_subroutines, task, None)</code>
+                <br><code>if fn: fn(target)</code>
+                </p>
+                <p>
+                <strong>Derivation of the Architecture:</strong> Imagine we didn't have this system. The command center would need a huge, ugly <code>if/elif/else</code> structure:
+                <br><code>if task == "ftp_anon_get":</code>
+                <br><code>    nmap_subroutines.ftp_anon_get(target)</code>
+                <br><code>elif task == "ftp_brute":</code>
+                <br><code>    nmap_subroutines.ftp_brute(target)</code>
+                <br>...and so on. This would be a nightmare. For every new subroutine, we would have to rebuild the command center.
+                </p>
+                <p>
+                <strong>The Brilliant Solution:</strong> Our architecture is much smarter. The <code>NmapRunner</code> analyst only needs to return the <strong>exact name of the function</strong> (e.g., the string <code>"ftp_brute"</code>). The command center then uses <code>getattr</code> to dynamically find and execute that function.
+                </p>
+                <p>
+                <strong>The Strategic Advantage:</strong> To add a new special mission (e.g., an SSH brute-force), we only need to do two things:
+                    <ol>
+                        <li>Add a new rule in <code>NmapRunner</code> that returns the task <code>"ssh_brute"</code> when Port 22 is open.</li>
+                        <li>Create a new function <code>def ssh_brute(target): ...</code> in this <code>nmap_subroutines.py</code> file.</li>
+                    </ol>
+                    The command center (<code>live_recon.py</code>) **never needs to be touched again**. It automatically adapts to our growing arsenal. This is the epitome of <strong>modular, extensible, and maintainable software architecture.</strong>
+                </p>
+            </div>
+        </div>
+    </div>
+    <!-- ======================= END OF CHAPTER 8 ======================= -->
+
+<li><a href="#module-detailed-logs">Chapter 9: detailed_logs.py (The Final Debriefing)</a></li>
+
+<!-- ======================= CHAPTER 9: DETAILED_LOGS.PY ======================= -->
+    <div id="module-detailed-logs" class="module-chapter">
+        <h2>Chapter 9: detailed_logs.py</h2>
+        <h3>🎯 Mission of the Module</h3>
+        <p>
+            Every operation concludes with a <strong>debriefing</strong>. This module is the archivist who, at the end of the mission, gives the operator the option to view the <strong>complete, unfiltered original reports</strong> from all deployed agents (scan tools). It asks the user if they want to see the details and then presents the raw log files in a clean, readable format directly in the terminal. This is crucial for in-depth analysis and for understanding the entire battlefield.
+        </p>
+
+        <h3>⚔️ The Armory (Libraries)</h3>
+        <div class="import-grid">
+            <div class="import-card" title="Enables communication with the operating system.">os</div>
+            <div class="import-card" title="Reads and writes the universal data format JSON.">json</div>
+            <div class="import-card" title="Gives us access to system utilities, e.g., to determine the terminal size.">shutil</div>
+        </div>
+        
+        <h3>Line-by-Line Code Analysis</h3>
+        
+        <h4>Function: <code>show_detailed_logs(log_directory)</code></h4>
+        <div class="code-block">
+            <pre><code class="language-python">
+import os
+import json
+import shutil
+
+# ... (LogColors class and helper functions like get_terminal_width, print_file_header)
+
+def show_detailed_logs(log_directory):
+    answer = input(
+        "\n[?] If you want to display all scan results in detail, "
+        "press 'J' and hit Enter: "
+    )
+
+    if answer.lower() == 'j':
+        try:
+            log_files = sorted(os.listdir(log_directory))
+            if not log_files:
+                print(f"[INFO] No log files found in directory '{log_directory}'.")
+                return
+
+            # First, display all text-based logs (.nmap, .txt)
+            for filename in log_files:
+                if filename.endswith(".nmap") or filename.endswith(".txt"):
+                    filepath = os.path.join(log_directory, filename)
+                    print_file_header(filename)
+                    with open(filepath, 'r', errors='ignore') as f:
+                        print(f.read().strip())
+
+            # Afterwards, display all JSON-based logs
+            for filename in log_files:
+                if filename.endswith(".json") and "nmap" not in filename:
+                    # ... (code to print header and process lines)
+                    for line in f:
+                        formatted = format_ferox_line(line)
+                        if formatted:
+                            print(formatted)
+                        # ... (further logic for generic JSON parsing)
+
+        except FileNotFoundError:
+            print(f"[ERROR] Log directory '{log_directory}' not found.")
+            </code></pre>
+            <div class="explanation">
+                <p><strong>Goal:</strong> This function is the core of the debriefing. It interacts with the user and presents the data.</p>
+                <p><strong>Line 8: <code>answer = input(...)</code></strong> - This is the dialogue with the operator. The program pauses and waits for input. Only if the user explicitly enters 'J' (or 'j') is the rest executed. This prevents the screen from being flooded with huge log files if the user doesn't want it.</p>
+                <p><strong>Line 14: <code>log_files = sorted(os.listdir(log_directory))</code></strong> - The archivist goes into the log folder (<code>log_directory</code>), lists all the files contained within (<code>os.listdir</code>), and sorts them alphabetically (<code>sorted</code>). This ensures a consistent and orderly display.</p>
+                <p><strong>High-End Concept (Separate Processing Loops):</strong> Instead of processing all files in one loop, the logic is cleverly divided.
+                    <ul>
+                        <li><strong>Loop 1 (Line 19):</strong> Goes through all files and looks <strong>only for text-based logs</strong> (<code>.nmap</code>, <code>.txt</code>). These can be simply read and printed directly to the terminal (<code>f.read()</code>).</li>
+                        <li><strong>Loop 2 (Line 25):</strong> Goes through the list a second time and looks <strong>only for JSON-based logs</strong> (like from Feroxbuster). These raw JSON files are hard for humans to read. That's why they are passed line by line to a special formatting function (<code>format_ferox_line</code>), which turns them into a pretty, tabular format.</li>
+                    </ul>
+                <strong>Derivation of this Architecture:</strong> This separation is a deliberate design choice. It separates the "dumb" display of raw text from the "intelligent" formatting of structured data (JSON). This makes the code cleaner and easier to extend. If we add a new tool in the future that outputs XML, we can simply add a third loop for XML processing without disturbing the existing logic.
+                </p>
+            </div>
+        </div>
+
+        <h4>Function: <code>format_ferox_line(line)</code></h4>
+        <div class="code-block">
+            <pre><code class="language-python">
+def format_ferox_line(line):
+    try:
+        data = json.loads(line)
+
+        if data.get("type") != "response":
+            return None
+
+        status = data.get("status", 0)
+        url = data.get("url", "")
+        length = data.get("content_length", 0)
+
+        s_color = LogColors.GREEN
+        if 300 <= status < 400:
+            s_color = LogColors.YELLOW
+        if status >= 400:
+            s_color = LogColors.RED
+
+        return (
+            f"{s_color}[{status}]{LogColors.RESET}  "
+            f"({LogColors.BLUE}{length:>6}b{LogColors.RESET})  {url}"
+        )
+
+    except json.JSONDecodeError:
+        return None
+            </code></pre>
+            <div class="explanation">
+                <p><strong>Goal:</strong> This function is a translator. It takes a single, cryptic JSON line from Feroxbuster and transforms it into a single, colorful, human-readable line for the report.</p>
+                <p><strong>Line 3: <code>data = json.loads(line)</code></strong> - The <code>json</code> translator takes the JSON text and turns it into a Python dictionary, which we can easily access.</p>
+                <p><strong>Line 5: <code>if data.get("type") != "response": return None</code></strong> - This is an intelligent filter. Feroxbuster produces different types of JSON messages. We are only interested in the actual server responses (<code>"response"</code>). All other messages are ignored (<code>return None</code>).</p>
+                <p><strong>Color Logic (Lines 12-16):</strong> Here, the color is chosen based on the HTTP status code. Successful requests (2xx) are green, redirects (3xx) are yellow, and errors (4xx/5xx) are red. This gives the operator an immediate visual cue about the importance of a finding.</p>
+                <p><strong>High-End Concept (Format String): <code>f"({LogColors.BLUE}{length:>6}b{LogColors.RESET})"</code></strong></p>
+                <ul>
+                    <li>This is an f-string, a modern way to format strings in Python.</li>
+                    <li><code>{length:>6}</code>: This is the secret weapon for clean tables. It tells Python: "Take the variable <code>length</code>, but always reserve <strong>6 character spaces</strong> for it. If the number is smaller, fill the rest with spaces on the left (<code>></code> means right-aligned)."</li>
+                    <li><strong>Result:</strong> Regardless of whether the file size is 10, 1000, or 100000 bytes, the column for the size will always be exactly the same width. This ensures a perfectly aligned, professional table look in the terminal.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <!-- ======================= END OF CHAPTER 9 ======================= --> 
+
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+</body>
+</html>
