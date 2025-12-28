@@ -277,6 +277,10 @@ It is a **recon operator** that works for you.
 - Red team preparation
 
 ---
+<p align="center">
+  <img src="99.png" alt="agent-image-ripper cover" width="50%" style="height: 20rem;">
+</p>
+
 
 ## 📖 Code Architecture & Documentation
 
