@@ -294,7 +294,7 @@ This is not just a tool, it's a playbook.
 # 🚀 Next Release....
 
 <p align="center">
-  <img src="[nextrecon2.jpg](https://github.com/AlienTec1908/AlienTec1908/blob/main/nextrecon2.jpg)" alt="agent-image-ripper cover" width="70%" style="height: auto;">
+  <img src="https://github.com/AlienTec1908/AlienTec1908/blob/main/nextrecon2.jpg" alt="agent-image-ripper cover" width="70%" style="height: auto;">
 </p>
 
 ---
