@@ -290,7 +290,15 @@ This is not just a tool, it's a playbook.
  
 **[➡️ Dive into the Full Code Documentation](https://alientec1908.github.io/Live-Recon/)**
 
- 
+---
+# 🚀 Next Release....
+
+<p align="center">
+  <img src="nextrecon2.jpg" alt="agent-image-ripper cover" width="70%" style="height: auto;">
+</p>
+
+---
+
 ## ⚠️ Security & Legal Disclaimer
 
 This tool is intended **exclusively for authorized security testing**.
